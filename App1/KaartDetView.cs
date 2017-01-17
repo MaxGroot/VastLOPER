@@ -15,7 +15,15 @@ namespace Kaart
         float Hoek;            // de rotatie van de locatie-marker
         float Schaal;          // de schaal van de kaart
         bool log = false;      // wordt er op dit moment een track opgenomen?
+
+        DateTime startmoment;
+
+
         List<PointF> track = new List<PointF>();  // het opgenomen track
+
+        List<float[]> trackpoints = new List<float[]>(); // Het opgenomen track volgens Max!!
+
+
         ScaleGestureDetector Detector;
         GestureDetector Detector2;
 
@@ -59,6 +67,7 @@ namespace Kaart
                 Schaal = Math.Max(((float)this.Width) / this.Plaatje.Width, ((float)this.Height) / this.Plaatje.Height);
 
             Paint verf = new Paint();
+            Paint tekstverf = new Paint();
 
             // centrumPos is in RD-meters, reken dit om naar bitmap-pixels
             float middenX = (centrumPos.X - 136000) * 0.4f;
@@ -73,19 +82,24 @@ namespace Kaart
 
             // Teken het track
             verf.Color = Color.Magenta;
-            foreach (PointF p in track)
+            tekstverf.Color = Color.White;
+            foreach (float[] p in trackpoints)
             {
                 // p is een track-point in RD-meters
                 // bereken de afstand tot het midden van de bitmap, gerekend in bitmap-pixels
-                float bpx = (p.X - centrumPos.X) * 0.4f;
-                float bpy = (centrumPos.Y - p.Y) * 0.4f;
+                float bpx = (p[0] - centrumPos.X) * 0.4f;
+                float bpy = (centrumPos.Y - p[1]) * 0.4f;
+                
                 // bereken de afstand tot het midden van de bitmap, gerekend in scherm-pixels
                 float sx = bpx * this.Schaal;
                 float sy = bpy * this.Schaal;
+                
                 // reken dit om naar absolute scherm-pixels
                 float x = this.Width / 2 + sx;
                 float y = this.Height / 2 + sy;
-                canvas.DrawCircle(x, y, 10, verf);
+                canvas.DrawCircle(x, y, 13, verf);
+                canvas.DrawText(p[2].ToString(),x, y, tekstverf);
+
             }
 
             // Teken de location-marker
@@ -112,9 +126,20 @@ namespace Kaart
         public void OnLocationChanged(Location loc)
         {
             huidigPos = Projectie.Geo2RD(loc);
+            TimeSpan verschil = DateTime.Now.Subtract(startmoment);
+
+            int verschilseconden = verschil.Seconds;
+
+            float[] trackpunt = new float[3];
+            trackpunt[0] = huidigPos.X;
+            trackpunt[1] = huidigPos.Y;
+            trackpunt[2] = verschilseconden;
+
+
             if (log)
             {
                 track.Add(huidigPos);
+                trackpoints.Add(trackpunt);
             }
             this.Invalidate();
         }
@@ -137,7 +162,11 @@ namespace Kaart
         }
         public void Start(object o, EventArgs ea)
         {
+
             this.log = !this.log;
+            startmoment = DateTime.Now; 
+
+
             this.Invalidate();
         }
         public void Schoon(object o, EventArgs ea)

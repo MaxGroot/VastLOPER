@@ -10,8 +10,8 @@ using Android.Locations;
 
 namespace Kaart
 {
-    [Activity(Label = "Deze app LOOPT vast", MainLauncher = true, Icon = "@drawable/icon")]
-    public class MainActivity : Activity
+    [Activity(Theme = "@android:style/Theme.NoTitleBar",  Label = "vastLOPER")]
+    public class KaartInterface : Activity
     {
         
         protected override void OnCreate(Bundle bundle)
@@ -20,7 +20,7 @@ namespace Kaart
 
 
 
-            // Knoppen
+            // Bovenknoppen
             Button centreerknop = new Button(this);
             centreerknop.Text = "Centreer";
 
@@ -30,11 +30,29 @@ namespace Kaart
             leegknop.Text = "Leegmaken";
 
 
-            LinearLayout knoppen = new LinearLayout(this);
-            knoppen.Orientation = Orientation.Horizontal;
-            knoppen.AddView(centreerknop);
-            knoppen.AddView(startstopknop);
-            knoppen.AddView(leegknop);
+            LinearLayout bovenknoppen = new LinearLayout(this);
+            bovenknoppen.Orientation = Orientation.Horizontal;
+            bovenknoppen.AddView(centreerknop);
+            bovenknoppen.AddView(startstopknop);
+            bovenknoppen.AddView(leegknop);
+
+
+            // Onderknoppen 
+
+            Button saveknop = new Button(this);
+            saveknop.Text = "Opslaan";
+            Button loadknop = new Button(this);
+            loadknop.Text = "Laden";
+            Button shareknop = new Button(this);
+            shareknop.Text = "Delen";
+
+            LinearLayout onderknoppen = new LinearLayout(this);
+            onderknoppen.Orientation = Orientation.Horizontal;
+            onderknoppen.AddView(saveknop);
+            onderknoppen.AddView(loadknop);
+            onderknoppen.AddView(shareknop);
+
+
 
 
             // Kaart
@@ -50,8 +68,12 @@ namespace Kaart
             LinearLayout viewstapel = new LinearLayout(this);
             viewstapel.Orientation = Orientation.Vertical;
             
-            viewstapel.AddView(knoppen);
+
+
+            viewstapel.AddView(bovenknoppen);
+            viewstapel.AddView(onderknoppen);
             viewstapel.AddView(info);
+
             this.SetContentView(viewstapel);
 
         }
