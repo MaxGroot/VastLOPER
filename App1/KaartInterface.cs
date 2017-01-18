@@ -16,9 +16,12 @@ namespace Kaart
     {
         KaartDetView info;
         Button startstopknop;
+        EditText inputvakje;
+
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
+             inputvakje = new EditText(this);
 
 
 
@@ -43,7 +46,7 @@ namespace Kaart
 
             Button saveknop = new Button(this);
             saveknop.Text = "Opslaan";
-            saveknop.Click += SaveIt;
+            saveknop.Click += SavePressed;
             Button analyzeknop = new Button(this);
             analyzeknop.Text = "Analyseren";
             analyzeknop.Click += GotoAnalyze;
@@ -115,18 +118,37 @@ namespace Kaart
             Intent i;
             i = new Intent(this, typeof(Analyzeinterface));
             i.PutExtra("trackstring", trackstring);
+            i.PutExtra("name", "Naamloze tocht");
+            i.PutExtra("timestring", DateTime.Now.ToString("dd-MM-yyyy"));
+
             this.StartActivity(i);
 
         }
+        public void SavePressed(object o, EventArgs ea) {
+            //set alert for executing the task
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.SetTitle("Naam voor uw tocht");
+            alert.SetView(inputvakje);
 
-        public void SaveIt(object o, EventArgs ea) {
+            alert.SetPositiveButton("Opslaan", SaveConfirmed);
+
+            alert.SetNegativeButton("Annuleren", (senderAlert, args) => {
+                Toast.MakeText(this, "Geannuleerd!", ToastLength.Short).Show();
+            });
+
+
+            Dialog dialog = alert.Create();
+            dialog.Show();
+        }
+        public void SaveConfirmed(object o, EventArgs ea) {
             List<float[]> track = info.trackpoints;
             string trackstring = TrackAnalyzer.Track_Stringify(track);
-
+            string trackname = inputvakje.Text;
+            
             saveload saver = new saveload();
 
-            saver.save_track(trackstring, DateTime.Now, "DICKS");
-            Toast.MakeText(this, "Tocht opgeslagen. ", ToastLength.Short).Show();
+            saver.save_track(trackstring, DateTime.Now, trackname);
+            Toast.MakeText(this, trackname + " opgeslagen. ", ToastLength.Short).Show();
 
 
         }

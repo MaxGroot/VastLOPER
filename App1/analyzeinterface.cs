@@ -21,6 +21,9 @@ namespace Kaart
 
             Button knoppie = new Button(this);
             string trackstring = this.Intent.GetStringExtra("trackstring");
+            string timestring = this.Intent.GetStringExtra("timestring");
+            string name = this.Intent.GetStringExtra("name");
+
             if (trackstring == null)
             {
                 knoppie.Text = "ERROR";
