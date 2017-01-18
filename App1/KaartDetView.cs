@@ -15,12 +15,12 @@ namespace Kaart
         float Hoek;            // de rotatie van de locatie-marker
         float Schaal;          // de schaal van de kaart
         public bool log = false;      // wordt er op dit moment een track opgenomen?
-
+        public bool fake = true; // Op het moment wordt nog de fake-track weergegeven
         DateTime startmoment;
 
 
         List<float[]> trackpoints = new List<float[]>(); // Het opgenomen track volgens Max!!
-
+        List<float[]> faketrack = new List<float[]>();
 
         ScaleGestureDetector Detector;
         GestureDetector Detector2;
@@ -29,8 +29,14 @@ namespace Kaart
         PointF huidigPos = new PointF(138300, 454400);  // stadion: hier staat de location-pointer zolang de GPS nog niet wakker is
         PointF centrumPos = new PointF(139000, 455500);  // precies het midden van het kaartblad
 
+        // De faketrackstring, een resultaat van een eerdere track_stringify.
+        const String faketrackstring = "137277,3?455166,1?4,225444|137518,4?455141,9?10,98134|137699,3?455126,4?17,30371|137849,3?455130,2?23,40523|137940?454995,3?31,5586|138085,5?454765,6?39,49768";
+       
         public KaartDetView(Context c) : base(c)
         {
+            faketrack = TrackAnalyzer.String_Trackify(faketrackstring);
+            trackpoints = faketrack; // Voor nu displayen we nog de fake-track. 
+
             Detector = new ScaleGestureDetector(c, this);
             Detector2 = new GestureDetector(c, this);
             this.SetBackgroundColor(Color.White);
@@ -55,6 +61,8 @@ namespace Kaart
 
             // Abonneren op scherm-aanrakingen
             this.Touch += RaakAan;
+
+
         }
 
         protected override void OnDraw(Canvas canvas)
@@ -138,8 +146,7 @@ namespace Kaart
                 trackpunt[2] = verschilseconden;
 
                 trackpoints.Add(trackpunt);
-
-                Console.WriteLine(TrackAnalyzer.Track_Total_Distance(trackpoints).ToString());
+                
 
 
             }
@@ -164,7 +171,13 @@ namespace Kaart
         }
         public void Start(object o, EventArgs ea)
         {
+            if (fake) {
+                // De fake track is nog ingeladen in de display-track. Display track legen dus en deze variabele op false zetten. 
+                fake = false;
+                trackpoints.Clear();
 
+
+            }
             this.log = !this.log;
             startmoment = DateTime.Now; 
 
@@ -231,7 +244,7 @@ namespace Kaart
         }
 
         public string TrackText() {
-            return TrackAnalyzer.Track_String(trackpoints);
+            return TrackAnalyzer.Track_Share_String(trackpoints);
         }
     }
 

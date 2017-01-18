@@ -176,9 +176,10 @@ namespace Kaart
             return ret;
         }
 
-        public static string Track_String(List<float[]> track)
+        public static string Track_Share_String(List<float[]> track)
         {
-            //return Track_Debug_String(track);
+            return Track_Stringify(track);
+            return Track_Debug_String(track);
 
 
             float totaldistance = Track_Total_Distance(track) / 1000;
@@ -192,6 +193,48 @@ namespace Kaart
             return $"Totale afstand: {totaldistance} kilometer \r\n Totale tijd: {totaltime} seconden \r\n Totale tijd rennend: {totalrunningtime} Gemiddelde snelheid, pauzes meegerekend: {avgspeedincluded} \r\n pauzes niet meegerekend: {avgspeedexcluded}";
 
         }
+
+        public static string Track_Stringify(List<float[]> track) {
+            string ret = "";
+            int i = 0;
+            foreach (float[] punt in track) {
+                i++;
+                string add = "";
+                add += punt[0].ToString() + "?" + punt[1].ToString() + "?" + punt[2].ToString();
+                if (i < track.Count)
+                {
+                    add += "|";
+                }
+
+                ret += add;
+            }
+
+            return ret;
+        }
+
+        
+        public static List<float[]> String_Trackify(string trackstring) {
+            List<float[]> track = new List<float[]>();
+            string[] punten = trackstring.Split('|');
+            
+            foreach (string punt in punten) {
+               
+                string[] puntdata = punt.Split('?');
+                int i = 0;
+                float[] floatpunt = new float[3];
+                foreach (string puntstuk in puntdata) {
+                    floatpunt[i] = float.Parse(puntstuk);
+                    
+                    i++;
+                }
+                track.Add(floatpunt);
+            }
+
+            return track;
+
+
+        }
+        
     }
 
 }
