@@ -6,7 +6,8 @@ using Android.Graphics;
 using Android.Content;
 using System;
 using Android.Views;
-using Android.Locations; 
+using Android.Locations;
+using System.Collections.Generic;
 
 namespace Kaart
 {
@@ -42,17 +43,21 @@ namespace Kaart
 
             Button saveknop = new Button(this);
             saveknop.Text = "Opslaan";
-            Button loadknop = new Button(this);
-            loadknop.Text = "Laden";
+            saveknop.Click += SaveIt;
+            Button analyzeknop = new Button(this);
+            analyzeknop.Text = "Analyseren";
+            analyzeknop.Click += GotoAnalyze;
             Button shareknop = new Button(this);
             shareknop.Text = "Delen";
             shareknop.Click += shareTrack;
+
+            
 
 
             LinearLayout onderknoppen = new LinearLayout(this);
             onderknoppen.Orientation = Orientation.Horizontal;
             onderknoppen.AddView(saveknop);
-            onderknoppen.AddView(loadknop);
+            onderknoppen.AddView(analyzeknop);
             onderknoppen.AddView(shareknop);
 
 
@@ -102,7 +107,30 @@ namespace Kaart
                 startstopknop.Text = "Start";
             }
         }
-        
+
+        public void GotoAnalyze(object o, EventArgs ea) {
+            List<float[]> track = info.trackpoints;
+            string trackstring = TrackAnalyzer.Track_Stringify(track);
+
+            Intent i;
+            i = new Intent(this, typeof(Analyzeinterface));
+            i.PutExtra("trackstring", trackstring);
+            this.StartActivity(i);
+
+        }
+
+        public void SaveIt(object o, EventArgs ea) {
+            List<float[]> track = info.trackpoints;
+            string trackstring = TrackAnalyzer.Track_Stringify(track);
+
+            saveload saver = new saveload();
+
+            saver.save_track(trackstring, DateTime.Now, "DICKS");
+            Toast.MakeText(this, "Tocht opgeslagen. ", ToastLength.Short).Show();
+
+
+        }
+
     }
 
     

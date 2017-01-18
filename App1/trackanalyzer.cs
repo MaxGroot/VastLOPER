@@ -211,8 +211,7 @@ namespace Kaart
 
             return ret;
         }
-
-        
+         
         public static List<float[]> String_Trackify(string trackstring) {
             List<float[]> track = new List<float[]>();
             string[] punten = trackstring.Split('|');

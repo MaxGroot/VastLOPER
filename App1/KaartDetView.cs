@@ -19,7 +19,7 @@ namespace Kaart
         DateTime startmoment;
 
 
-        List<float[]> trackpoints = new List<float[]>(); // Het opgenomen track volgens Max!!
+        public List<float[]> trackpoints = new List<float[]>(); // Het opgenomen track volgens Max!!
         List<float[]> faketrack = new List<float[]>();
 
         ScaleGestureDetector Detector;
