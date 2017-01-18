@@ -14,24 +14,20 @@ namespace Kaart
     [Activity(Theme = "@android:style/Theme.NoTitleBar", Label = "LoadInterface")]
     public class LoadInterface : Activity
     {
-
+        List<TrackInfo> paden;
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
             ListView padendisplay = new ListView(this);
 
-            List<TrackInfo> paden = new List<TrackInfo>();
+            paden = new List<TrackInfo>();
             saveload saver = new saveload();
             paden = saver.load_track();
-
-
-            Button knoppie = new Button(this);
-            string tekst = "";
-
+            
             List<String> padennamen = new List<String>();
             foreach (TrackInfo pad in paden) {
 
-                tekst = "\r\n";
+                String tekst = "\r\n";
                 tekst += pad.name + " - " + pad.timedate.ToString("dd-MM-yyyy");
 
                 padennamen.Add(tekst);
@@ -39,15 +35,33 @@ namespace Kaart
 
             }
 
-            ArrayAdapter<string> adaptertje = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItemChecked, padennamen);
-            padendisplay.Adapter = adaptertje; 
+            ArrayAdapter<string> adaptertje = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItemActivated1, padennamen);
+            padendisplay.Adapter = adaptertje;
+            padendisplay.ChoiceMode = ChoiceMode.Single;
+            padendisplay.ItemClick += GaLaden;
 
-
-            knoppie.Text = "KLIK MIJ";
+        
             this.SetContentView(padendisplay);
 
         }
-        
+
+        private void GaLaden(object o, AdapterView.ItemClickEventArgs e) {
+            int positie = e.Position;
+            TrackInfo gekozenpad = paden[positie];
+           
+
+            
+            Intent i;
+            i = new Intent(this, typeof(Analyzeinterface));
+
+            i.PutExtra("trackstring", gekozenpad.trackstring);
+            i.PutExtra("timestring", gekozenpad.timedate.ToString("dd-MM-yyyy"));
+            i.PutExtra("name", gekozenpad.name);
+
+            this.StartActivity(i);
+
+
+        }
 
     }
 
