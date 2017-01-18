@@ -14,7 +14,7 @@ namespace Kaart
         Bitmap Plaatje, Pijl;  // de bitmaps van de kaart en de locatie-marker
         float Hoek;            // de rotatie van de locatie-marker
         float Schaal;          // de schaal van de kaart
-        bool log = false;      // wordt er op dit moment een track opgenomen?
+        public bool log = false;      // wordt er op dit moment een track opgenomen?
 
         DateTime startmoment;
 
@@ -65,7 +65,6 @@ namespace Kaart
                 Schaal = Math.Max(((float)this.Width) / this.Plaatje.Width, ((float)this.Height) / this.Plaatje.Height);
 
             Paint verf = new Paint();
-            Paint tekstverf = new Paint();
 
             // centrumPos is in RD-meters, reken dit om naar bitmap-pixels
             float middenX = (centrumPos.X - 136000) * 0.4f;
@@ -77,10 +76,18 @@ namespace Kaart
             mat.PostScale(this.Schaal, this.Schaal);
             mat.PostTranslate(this.Width / 2, this.Height / 2);
             canvas.DrawBitmap(this.Plaatje, mat, verf);
-
+            
+            // Teken de location-marker
+            mat = new Matrix();
+            mat.PostTranslate(-Pijl.Width / 2, -Pijl.Height / 2);
+            mat.PostRotate(this.Hoek);
+            mat.PostTranslate(this.Width / 2 + (huidigPos.X - centrumPos.X) * 0.4f * this.Schaal
+                             , this.Height / 2 + (centrumPos.Y - huidigPos.Y) * 0.4f * this.Schaal
+                             );
+            canvas.DrawBitmap(this.Pijl, mat, verf);
+            
             // Teken het track
             verf.Color = Color.Magenta;
-            tekstverf.Color = Color.White;
             foreach (float[] p in trackpoints)
             {
                 // p is een track-point in RD-meters
@@ -96,18 +103,10 @@ namespace Kaart
                 float x = this.Width / 2 + sx;
                 float y = this.Height / 2 + sy;
                 canvas.DrawCircle(x, y, 13, verf);
-                canvas.DrawText(p[2].ToString(),x, y, tekstverf);
 
             }
 
-            // Teken de location-marker
-            mat = new Matrix();
-            mat.PostTranslate(-Pijl.Width / 2, -Pijl.Height / 2);
-            mat.PostRotate(this.Hoek);
-            mat.PostTranslate(this.Width / 2 + (huidigPos.X - centrumPos.X) * 0.4f * this.Schaal
-                             , this.Height / 2 + (centrumPos.Y - huidigPos.Y) * 0.4f * this.Schaal
-                             );
-            canvas.DrawBitmap(this.Pijl, mat, verf);
+           
         }
 
         // Implementatie van ISensorEventListener
@@ -130,8 +129,8 @@ namespace Kaart
             if (log)
             {
                 TimeSpan verschil = DateTime.Now.Subtract(startmoment);
-
-                int verschilseconden = verschil.Seconds;
+                
+                float verschilseconden = (float) verschil.TotalSeconds;
 
                 float[] trackpunt = new float[3];
                 trackpunt[0] = huidigPos.X;
@@ -140,7 +139,7 @@ namespace Kaart
 
                 trackpoints.Add(trackpunt);
 
-                Console.WriteLine(TrackManager.Track_Total_Distance(trackpoints).ToString());
+                Console.WriteLine(TrackAnalyzer.Track_Total_Distance(trackpoints).ToString());
 
 
             }
@@ -230,114 +229,12 @@ namespace Kaart
         {
             return true;
         }
+
+        public string TrackText() {
+            return TrackAnalyzer.Track_String(trackpoints);
+        }
     }
 
-    class TrackManager {
 
-        public static float PuntAfstand(PointF een, PointF twee) {
-            // Returnt de afstand in meters tussen twee  RD punten.
-            float afstandX = Math.Abs(een.X - twee.X);
-            float afstandY = Math.Abs(een.Y - twee.Y);
-            return afstandX + afstandY;
-        }
-
-        public static float PuntSnelheid(PointF een, PointF twee , float tijdverschil) {
-            // Returnt de snelheid tussen twee punten in kilometers per uur.
-            tijdverschil = Math.Abs(tijdverschil);
-
-            float afstand = PuntAfstand(een, twee);
-
-            return (afstand / tijdverschil) * 3.6f;
-            
-
-        }
-
-        public static float Track_Total_Distance(List<float[]> track)        {            // Returnt de totale afstand in meters.
-            float totaldistance = 0f;
-            PointF oudepunt = new PointF();
-            PointF ditpunt = new PointF();
-            int i = 0;
-            foreach (float[] punt in track)
-            {
-                if (i == 0)
-                {
-                    // Eerste punt. Die kunnen we niet vergelijken natuurlijk!
-
-                }
-                else {
-                    // Tweede of later punt. Afstand vergelijken met vorige punt en dit optellen aan de oude afstand
-                    ditpunt.X = punt[0]; ditpunt.Y = punt[1];
-                    totaldistance += PuntAfstand(ditpunt, oudepunt);
-
-
-                
-
-                }
-
-                oudepunt.X = punt[0]; oudepunt.Y = punt[1];
-
-                i++;
-            }
-
-            return totaldistance;
-        }
-
-        public static float Track_Average_Speed(List<float[]> track , bool includepause) {
-            float trackdistance = Track_Total_Distance(track);
-
-            if (includepause)
-            {
-                // De pauzes tellen ook mee voor de gemiddelde snelheid. Dat betekent dat we gewoon het tijdsverschil van punt 1 en het laatste punt kunnen gebruiken!
-                float[] eerstepunt = track[0];
-                float[] laatstepunt = track[track.Count - 1];
-
-                float verschilinseconden = laatstepunt[2] - eerstepunt[2];
-
-
-                return (trackdistance / verschilinseconden) * 3.6f;
-
-            }
-            else {
-                // Er moet een lijst gemaakt worden van alle snelheden die de gebruiker heeft gehad tijdens het lopen. Daarna moet de gemiddelde waarde in die lijst worden gereturned. 
-                List<float> snelheden = new List<float> ();
-                int i = 0;
-                float[] oudepunt = { };
-                float[] nieuwepunt = { };
-
-                foreach (float[] punt in track) {
-                    nieuwepunt = punt;
-
-
-                    if (i == 0)
-                    {
-                        // Eerstepunt, geen snelheidcalculatie mogelijk
-                    }
-                    else
-                    {
-                        // Bereken snelheid en voeg toe aan de snelheden list
-                        PointF een = new PointF(nieuwepunt[0], nieuwepunt[1]);
-                        PointF twee = new PointF(oudepunt[0], oudepunt[1]);
-
-                        float add = PuntSnelheid(een, twee, nieuwepunt[2] - oudepunt[2]);
-                        snelheden.Add(add);
-
-                    }
-                    oudepunt = nieuwepunt;
-                    i++;
-                }
-
-                // Nu hebben we onze lijst met snelheden, nu gaan we het gemiddelde berekenen
-                float totaltime = 0;
-                for (i = 0; i < snelheden.Count; i++) {
-                    totaltime += snelheden[i];
-                }
-                return (trackdistance / totaltime) * 3.6f;
-
-
-            }
-  
-        }
-
-    }
 }
 

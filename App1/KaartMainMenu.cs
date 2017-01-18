@@ -10,7 +10,7 @@ using Android.Locations;
 
 namespace Kaart
 {
-    [Activity(Theme = "@android:style/Theme.NoTitleBar", Label = "MainMenu", MainLauncher = true, Icon = "@drawable/icon")]
+    [Activity(Theme = "@android:style/Theme.NoTitleBar", Label = "vastLOPER", MainLauncher = true, Icon = "@drawable/icon")]
     public class MainMenu : Activity
     {
 

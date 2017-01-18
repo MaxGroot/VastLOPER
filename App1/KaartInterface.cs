@@ -13,7 +13,8 @@ namespace Kaart
     [Activity(Theme = "@android:style/Theme.NoTitleBar",  Label = "vastLOPER")]
     public class KaartInterface : Activity
     {
-        
+        KaartDetView info;
+        Button startstopknop;
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
@@ -24,7 +25,7 @@ namespace Kaart
             Button centreerknop = new Button(this);
             centreerknop.Text = "Centreer";
 
-            Button startstopknop = new Button(this);
+            startstopknop = new Button(this);
             startstopknop.Text = "Start";
             Button leegknop = new Button(this);
             leegknop.Text = "Leegmaken";
@@ -45,6 +46,8 @@ namespace Kaart
             loadknop.Text = "Laden";
             Button shareknop = new Button(this);
             shareknop.Text = "Delen";
+            shareknop.Click += shareTrack;
+
 
             LinearLayout onderknoppen = new LinearLayout(this);
             onderknoppen.Orientation = Orientation.Horizontal;
@@ -56,13 +59,14 @@ namespace Kaart
 
 
             // Kaart
-            KaartDetView info = new Kaart.KaartDetView(this);
+             info = new Kaart.KaartDetView(this);
 
 
             // Handlers voor klikken op knoppen
             centreerknop.Click += info.Centreer;
             leegknop.Click += info.Schoon;
             startstopknop.Click += info.Start;
+            startstopknop.Click += this.SetStartButton;
 
             // Stapel bovenstaande views op elkaar en zet ze op het scherm. 
             LinearLayout viewstapel = new LinearLayout(this);
@@ -78,7 +82,26 @@ namespace Kaart
 
         }
 
-  
+        public void shareTrack(object o, EventArgs ea) {
+
+            string bericht = info.TrackText(); 
+            Intent i = new Intent(Intent.ActionSend);
+            i.SetType("text/plain");
+            i.PutExtra(Intent.ExtraText, bericht);
+            this.StartActivity(i);
+
+        }
+
+        public void SetStartButton(object o, EventArgs ea) {
+            bool running = info.log;
+            if (running)
+            {
+                startstopknop.Text = "Stop";
+            }
+            else {
+                startstopknop.Text = "Start";
+            }
+        }
         
     }
 
