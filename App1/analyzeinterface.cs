@@ -26,8 +26,7 @@ namespace Kaart
             string trackstring = this.Intent.GetStringExtra("trackstring");
             string timestring = this.Intent.GetStringExtra("timestring");
             string name = this.Intent.GetStringExtra("name");
-            float pauseseconds = this.Intent.GetFloatExtra("pauseseconds",0f);
-
+            
             if (trackstring == null)
             {
                 // Huh: geen informatie.
@@ -35,13 +34,12 @@ namespace Kaart
             }
             else {
                 // Decodeer de track
-                List<float[]> track = TrackAnalyzer.String_Trackify(trackstring);
+                List<knooppunt> track = TrackAnalyzer.String_Trackify(trackstring);
                 string knoptekst = "";
 
                 // Geef informatie erover weer. Joost, hier mag jij los! Ik zou het natuurlijk niet meer op een knoppie weergeven straks :P
-                knoptekst += "Total distance: "  + (TrackAnalyzer.Track_Total_Distance(track) / 1000f).ToString();
-                knoptekst += "\r\n Total pause: " + pauseseconds.ToString();
-
+                //knoptekst += "Total distance: "  + (TrackAnalyzer.Track_Total_Distance(track) / 1000f).ToString();
+                knoptekst = TrackAnalyzer.Track_Debugstring(track);
                 knoppie.Text = knoptekst;
 
             }

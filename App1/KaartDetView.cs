@@ -19,13 +19,13 @@ namespace Kaart
 
         public bool log = false;      // wordt er op dit moment een track opgenomen?
         public bool fake = true; // Op het moment wordt nog de fake-track weergegeven
-        DateTime startmoment; // Startmoment is voor elk punt om zijn verschil in seconden tov van het starten/resumen van het lopen te bepalen.
+        public bool havelocation = false;
+        DateTime pauzemoment; // Pauzemoment is voor elk punt om zijn verschil in seconden tov van het laatste starten/resumen van het lopen te bepalen.
+        DateTime startmoment; // Startmoment is voor elk punt om zijn verschil in seconden te bepalen tov de eerste start. 
+        
 
-        public float pauseseconds = 0f; // Totale pauzetijd.
-        DateTime pauzestart; // Een datetime die vastlegt op welk moment de laatste pauze was.
-
-        public List<float[]> trackpoints = new List<float[]>(); // Het opgenomen track volgens Max!!
-        List<float[]> faketrack = new List<float[]>();
+        public List<knooppunt> trackpoints = new List<knooppunt>(); // Het opgenomen track volgens Max!!
+        List<knooppunt> faketrack = new List<knooppunt>();
 
         ScaleGestureDetector Detector;
         GestureDetector Detector2;
@@ -35,8 +35,7 @@ namespace Kaart
         PointF centrumPos = new PointF(139000, 455500);  // precies het midden van het kaartblad
 
         // De faketrackstring, een resultaat van een eerdere track_stringify.
-        const String faketrackstring = "137277,3?455166,1?4,225444|137518,4?455141,9?10,98134|137699,3?455126,4?17,30371|137849,3?455130,2?23,40523|137940?454995,3?31,5586|138085,5?454765,6?39,49768";
-       
+        const String faketrackstring = "140153,1?455083,7?7,754532?7,522213?False|140164,9?455034,4?22,75727?22,5254?False|140195,7?455033,9?30,79465?30,56279?False|140195,7?455033,9?35,94473?35,71283?True|140269,1?455056,6?63,11162?6,333959?False|140269,6?455078,7?69,25266?12,475?False|140262,2?455097,4?75,90218?19,12452?False|140246?455111,4?84,58216?27,8045?False";
         public KaartDetView(Context c) : base(c)
         {
             // faketrackstring decoderen naar een echte track.
@@ -79,6 +78,7 @@ namespace Kaart
                 Schaal = Math.Max(((float)this.Width) / this.Plaatje.Width, ((float)this.Height) / this.Plaatje.Height);
 
             Paint verf = new Paint();
+            Paint rodeverf = new Paint();
 
             // centrumPos is in RD-meters, reken dit om naar bitmap-pixels
             float middenX = (centrumPos.X - 136000) * 0.4f;
@@ -102,12 +102,13 @@ namespace Kaart
             
             // Teken het track
             verf.Color = Color.Magenta;
-            foreach (float[] p in trackpoints)
+            rodeverf.Color = Color.Red;
+            foreach (knooppunt p in trackpoints)
             {
                 // p is een track-point in RD-meters
                 // bereken de afstand tot het midden van de bitmap, gerekend in bitmap-pixels
-                float bpx = (p[0] - centrumPos.X) * 0.4f;
-                float bpy = (centrumPos.Y - p[1]) * 0.4f;
+                float bpx = (p.x - centrumPos.X) * 0.4f;
+                float bpy = (centrumPos.Y - p.y) * 0.4f;
                 
                 // bereken de afstand tot het midden van de bitmap, gerekend in scherm-pixels
                 float sx = bpx * this.Schaal;
@@ -116,8 +117,16 @@ namespace Kaart
                 // reken dit om naar absolute scherm-pixels
                 float x = this.Width / 2 + sx;
                 float y = this.Height / 2 + sy;
-                canvas.DrawCircle(x, y, 13, verf);
 
+                if (p.ispause)
+                {
+                    // Pauzepunt tekenen
+                    canvas.DrawCircle(x, y, 15, rodeverf);
+                }
+                else
+                {
+                    canvas.DrawCircle(x, y, 13, verf);
+                }
             }
 
             // Teken een debugvierkant
@@ -144,6 +153,7 @@ namespace Kaart
         // Implementatie van ILocationListener
         public void OnLocationChanged(Location loc)
         {
+            havelocation = true;
             huidigPos = Projectie.Geo2RD(loc);
            
 
@@ -151,15 +161,19 @@ namespace Kaart
             if (log)
             {
                 // Bepaal aantal seconden dat de gebruiker erover heeft gedaan sinds de resume/start vh lopen om op dit punt te komen.
-                TimeSpan verschil = DateTime.Now.Subtract(startmoment);
-                
-                float verschilseconden = (float) verschil.TotalSeconds;
-
+                TimeSpan pauzeverschil = DateTime.Now.Subtract(pauzemoment);
+                TimeSpan tijdverschil = DateTime.Now.Subtract(startmoment);
+                float pauzeverschilseconden = (float) pauzeverschil.TotalSeconds;
+                float startverschilseconden = (float) tijdverschil.TotalSeconds;
                 // Een trackpunt is niet langer een PointF, maar een float array met zijn x, y en verschil in seconden.
+                /*
                 float[] trackpunt = new float[3];
                 trackpunt[0] = huidigPos.X;
                 trackpunt[1] = huidigPos.Y;
                 trackpunt[2] = verschilseconden;
+                */
+
+                knooppunt trackpunt = new knooppunt(huidigPos.X,huidigPos.Y,startverschilseconden,pauzeverschilseconden,false);
 
                 trackpoints.Add(trackpunt);
                 
@@ -187,36 +201,52 @@ namespace Kaart
         }
         public void Start(object o, EventArgs ea)
         {
+            if (!havelocation) {
+                // Deze knop mag GEEN effect hebben als er nog geen locatie lock is.
+                Console.WriteLine("DICKS");
+                return;
+            }
             if (fake)
             {
                 // De fake track is nog ingeladen in de display-track. Display track legen dus en deze variabele op false zetten. 
+                Console.WriteLine("PIEMELS");
                 fake = false;
                 trackpoints.Clear();
+                
 
+                // Ook het startmoment vastleggen.
+                startmoment = DateTime.Now;
+                pauzemoment = DateTime.Now;
 
             }
             else {
                 // Hé! Er is op stop gedrukt terwijl een echte track bezig was. Een pauze dus!
                 if (log)
                 {
-                    // Er is op stop gedrukt!
-                    
+                    // Er is op stop gedrukt! Pauze!! Die pauze moet in de track worden vastgelegd.
+                    Console.WriteLine("PAUZE");
+                    TimeSpan pauzeverschil = DateTime.Now.Subtract(pauzemoment);
+                    TimeSpan tijdverschil = DateTime.Now.Subtract(startmoment);
+                    float pauzeverschilseconden = (float)pauzeverschil.TotalSeconds;
+                    float startverschilseconden = (float)tijdverschil.TotalSeconds;
+
+                    knooppunt trackpunt = new Kaart.knooppunt(huidigPos.X, huidigPos.Y,startverschilseconden, pauzeverschilseconden, true);
+
+                    trackpoints.Add(trackpunt);
+
                 }
                 else {
                     // Er is op start gedrukt! Dat betekent dat er hiervoor een pauze was. We gaan de pauzetijd optellen.
-                    TimeSpan verschil = DateTime.Now.Subtract(pauzestart);
-                    pauseseconds += (float) verschil.TotalSeconds; 
-
+                    
+                    Console.WriteLine("RESUME");
                 }
-                pauzestart = DateTime.Now;
-
 
             }
-            this.log = !this.log;
 
-            // Meest recente startmoment vastleggen.
-            startmoment = DateTime.Now; 
 
+            // Meest recente pauzemoment vastleggen.
+            pauzemoment = DateTime.Now;
+            log = !log;
 
             this.Invalidate();
         }

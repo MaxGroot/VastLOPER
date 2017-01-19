@@ -10,22 +10,46 @@ using System.Collections.Generic;  // vanwege List
 namespace Kaart
 {
     // Deze class bevat functies voor het coderen, decoderen en analyzeren van tracks en knooppunten.
+    class knooppunt {
+        public float x;
+        public float y;
+        public float timesincelastpause;
+        public float timesincestart;
+        public bool ispause;
+
+        public knooppunt() {
+            // Lege constructor
+        }
+
+        public knooppunt(float x, float y, float starttime , float pausetime, bool pause) {
+            // Een echt knooppunt aanmaken
+            this.x = x;
+            this.y = y;
+            this.timesincelastpause = pausetime;
+            this.timesincestart = starttime;
+            this.ispause = pause;
+        }
+    }
+
     class TrackAnalyzer
     {
 
-        public static float PuntAfstand(PointF een, PointF twee) // Returnt de afstand in meters tussen twee  RD punten.
+        public static float PuntAfstand(knooppunt een, knooppunt twee) // Returnt de afstand in meters tussen twee  RD punten.
 
         {
-            float afstandX = Math.Abs(een.X - twee.X);
-            float afstandY = Math.Abs(een.Y - twee.Y);
+            float afstandX = Math.Abs(een.x - twee.x);
+            float afstandY = Math.Abs(een.y - twee.y);
             return afstandX + afstandY;
         }
 
-        public static float PuntSnelheid(PointF een, PointF twee, float tijdverschil) // Returnt de snelheid tussen twee punten in kilometers per uur.
+        public static float PuntTijdVerschil(knooppunt een, knooppunt twee) {
+            return Math.Abs(twee.timesincestart - een.timesincestart);
+        }
+
+        public static float PuntSnelheid(knooppunt een, knooppunt twee) // Returnt de snelheid tussen twee punten in kilometers per uur.
 
         {
-            tijdverschil = Math.Abs(tijdverschil);
-
+            float tijdverschil = PuntTijdVerschil(een, twee);
             float afstand = PuntAfstand(een, twee);
 
             // Keer 3.6 om van meters per seconde naar kilometers per uur te gaan
@@ -34,18 +58,19 @@ namespace Kaart
 
         }
 
-        public static float Track_Total_Distance(List<float[]> track)           // Returnt de totale afstand in meters.
+        public static float Track_Total_Distance(List<knooppunt> track)           // Returnt de totale afstand in meters.
 
 
         {
             float totaldistance = 0f;
-            PointF oudepunt = new PointF();
-            PointF ditpunt = new PointF();
+            knooppunt oudepunt = new knooppunt();
+            knooppunt nieuwepunt;
             int i = 0;
 
             // Alle punten aflopen en de afstand met het vorige punt optellen aan de totale afstand variabele (totaldistance)
-            foreach (float[] punt in track)
+            foreach (knooppunt punt in track)
             {
+                nieuwepunt = punt;
                 if (i == 0)
                 {
                     // Eerste punt. Die kunnen we niet vergelijken natuurlijk!
@@ -54,8 +79,14 @@ namespace Kaart
                 else
                 {
                     // Tweede of later punt. Afstand vergelijken met vorige punt en dit optellen aan de oude afstand
-                    ditpunt.X = punt[0]; ditpunt.Y = punt[1];
-                    totaldistance += PuntAfstand(ditpunt, oudepunt);
+                    if (oudepunt.ispause)
+                    {
+                        // Helaas! De afstand afgelegd is de afstand sinds de pauze. deze telt NIET mee.
+                    }
+                    else {
+                        // Hoppa! Een afstand tussen twee gelopen punten! Deze telt mee.
+                        totaldistance += PuntAfstand(nieuwepunt, oudepunt);
+                    }
 
 
 
@@ -63,8 +94,7 @@ namespace Kaart
                 }
 
                 // Oudepunt voor de volgende, is het huidige punt.
-                oudepunt.X = punt[0]; oudepunt.Y = punt[1];
-
+                oudepunt = nieuwepunt;
                 i++;
             }
 
@@ -72,59 +102,66 @@ namespace Kaart
         }
 
         
-        public static float Track_Total_Time(List<float[]> track) // Returnt de totale tijd doorgebracht op de track, pauzes meegerekend
+        public static float Track_Total_Time(List<knooppunt> track) // Returnt de totale tijd doorgebracht op de track, pauzes meegerekend
         {
-            // Deze werking is incorrect!
-            float[] eerstepunt = track[0];
-            float[] laatstepunt = track[track.Count - 1];
-
-            float verschilinseconden = laatstepunt[2] - eerstepunt[2];
-            return verschilinseconden;
+            // Geef gewoon de tijd van het allerlaatste knooppunt tov de start!
+            return (track[track.Count - 1]).timesincestart;
         }
 
-        public static float Track_Total_Time_Running(List<float[]> track) // Returnt de totale tijd doorgebracht op de track, pauzes niet meegerekend
-        {
-            List<float> snelheden = new List<float>();
-            int i = 0;
-            float[] oudepunt = { };
-            float[] nieuwepunt = { };
 
+
+        public static float Track_Total_Time_Running(List<knooppunt> track) // Returnt de totale tijd doorgebracht op de track, pauzes niet meegerekend
+        {
+            float totaltime = 0f;
+            int i = 0;
+            knooppunt nieuwepunt = new Kaart.knooppunt();
+            knooppunt oudepunt = new Kaart.knooppunt();
+            
             // Alle punten afgaan, en de snelheid tov vorige punt toevoegen aan de list 'snelheden'.
-            foreach (float[] punt in track)
+            foreach (knooppunt punt in track)
             {
                 nieuwepunt = punt;
 
                
                 if (i == 0)
                 {
-                    // Eerstepunt, geen snelheidcalculatie mogelijk
+                    // Eerste punt. We hoeven dus niet te checken of er niet een pauze voor zat.
+                    totaltime += punt.timesincestart;
                 }
                 else
                 {
-                    // Bereken snelheid en voeg toe aan de snelheden list
-                    PointF een = new PointF(nieuwepunt[0], nieuwepunt[1]);
-                    PointF twee = new PointF(oudepunt[0], oudepunt[1]);
+                    // Kijk eerst of dit punt niet een pauze is.
+                    if (punt.ispause)
+                    {
+                        // Helaas, pauzes tellen niet mee voor de totale rentijd!
+                    }
+                    else {
+                        // Geldig looppunt, pak de tijd tov laatste punt.
 
-                    float add = PuntSnelheid(een, twee, nieuwepunt[2] - oudepunt[2]);
-                    snelheden.Add(add);
+                        if (oudepunt.ispause)
+                        {
+                            // Vorige punt was een pauze. Alleen de tijd pakken van het nieuwe punt tov pauze.
+                            totaltime += nieuwepunt.timesincelastpause;
+                        }
+                        else
+                        {
+                            // Vorige punt was een looppunt. Tijdverschil pakken tussen de twee.
+                            totaltime += nieuwepunt.timesincelastpause - oudepunt.timesincelastpause;
+                        }
+                    }
 
                 }
                 oudepunt = nieuwepunt;
                 i++;
 
             }
-
-            // Nu hebben we onze lijst met snelheden, nu gaan we het gemiddelde berekenen
-            float totaltime = 0;
-            for (i = 0; i < snelheden.Count; i++)
-            {
-                totaltime += snelheden[i];
-            }
+            // Geef maar terug!
             return totaltime;
 
         }
 
-        public static float Track_Average_Speed(List<float[]> track, bool includepause) // De gemiddelde snelheid op een track, bool geeft aan of pauzes meetellen voor gem. snelheid
+
+        public static float Track_Average_Speed(List<knooppunt> track, bool includepause) // De gemiddelde snelheid op een track, bool geeft aan of pauzes meetellen voor gem. snelheid
         {
             float trackdistance = Track_Total_Distance(track);
 
@@ -149,46 +186,8 @@ namespace Kaart
 
         }
         
-        public static string Track_Debug_String(List<float[]> track) // Functie is obsolete en eigenlijk niet zo bruikbaar meer nu tracks naar strings omgezet kunnen worden
-            
-        {
-            String ret = "";
-            int i = 0;
-            float[] oudepunt = { };
-            float[] nieuwepunt = { };
-            float speed;
-            float distance;
-
-            foreach (float[] punt in track)
-            {
-                nieuwepunt = punt;
-                if (i > 0)
-
-                {
-                    PointF een = new PointF(nieuwepunt[0], nieuwepunt[1]);
-                    PointF twee = new PointF(oudepunt[0], oudepunt[1]);
-                    distance = PuntAfstand(een, twee) / 1000f;
-                    speed = PuntSnelheid(een, twee, nieuwepunt[2] - oudepunt[2]);
-                }
-                else
-                {
-                    speed = 0;
-                    distance = 0;
-                }
-                //ret += "(" + punt[0].ToString() + " , " + punt[1].ToString() + ") , " + punt[2] + " seconds since last start. \r\n"; 
-                //ret +=" { (Speed: " + speed.ToString() + " km / u ) , Distance:  " + distance.ToString() + " kilometers } \r\n";
-
-                ret += "faketrack[" + i.ToString() + "] = {" + punt[0].ToString() + "," + punt[1].ToString() + "," + punt[2].ToString() + "}";
-
-                i++;
-                oudepunt = nieuwepunt;
-            }
-
-            return ret;
-        }
-
         // Returnt de string die gebruikers over hun track kunnen delen.
-        public static string Track_Share_String(List<float[]> track)
+        public static string Track_Share_String(List<knooppunt> track)
         {
 
             // Voorlopig geeft hij de gecodeerde track terug ipv een mooie samenvatting, zo kunnen we 
@@ -209,16 +208,16 @@ namespace Kaart
         }
 
         // Codeer een track naar een string
-        public static string Track_Stringify(List<float[]> track) {
+        public static string Track_Stringify(List<knooppunt> track) {
             string ret = "";
             int i = 0;
             // Voor alle punten..
-            foreach (float[] punt in track) {
+            foreach (knooppunt punt in track) {
                 i++;
                 string add = "";
 
                 // Formaat: x?y?tijd
-                add += punt[0].ToString() + "?" + punt[1].ToString() + "?" + punt[2].ToString();
+                add += punt.x.ToString() + "?" + punt.y.ToString() + "?" + punt.timesincestart.ToString() + "?" + punt.timesincelastpause.ToString() + "?" + punt.ispause.ToString();
 
                 // En als het niet het laatste punt is...
                 if (i < track.Count)
@@ -234,8 +233,8 @@ namespace Kaart
         }
          
         // Codeer een string naar een track!
-        public static List<float[]> String_Trackify(string trackstring) {
-            List<float[]> track = new List<float[]>();
+        public static List<knooppunt> String_Trackify(string trackstring) {
+            List<knooppunt> track = new List<knooppunt>();
             // Splitst de string op in punten die we gaan analyseren
             string[] punten = trackstring.Split('|');
             
@@ -243,21 +242,41 @@ namespace Kaart
             foreach (string punt in punten) {
                // Splits de punten in waarden die we kunnen toewijzen.
                 string[] puntdata = punt.Split('?');
-                int i = 0;
-                float[] floatpunt = new float[3];
+                
+                knooppunt nieuwpunt = new Kaart.knooppunt();
                 // Laad de data van de string in de float
-                foreach (string puntstuk in puntdata) {
-                    floatpunt[i] = float.Parse(puntstuk);
-                    
-                    i++;
-                }
+                nieuwpunt.x = float.Parse(puntdata[0]);
+                nieuwpunt.y = float.Parse(puntdata[1]);
+                nieuwpunt.timesincestart = float.Parse(puntdata[2]);
+                nieuwpunt.timesincelastpause = float.Parse(puntdata[3]);
+                nieuwpunt.ispause = bool.Parse(puntdata[4]);
+
                 // En die float is een track knooppunt!
-                track.Add(floatpunt);
+                track.Add(nieuwpunt);
             }
 
             return track;
 
 
+        }
+
+        public static String Track_Debugstring(List<knooppunt> track) {
+            String ret = "";
+            foreach (knooppunt p in track) {
+                ret += "\r\n";
+                if (p.ispause)
+                {
+                    ret += "pause - ";
+                }
+                else {
+                    ret += "point - ";
+                }
+                ret += p.x.ToString() + ", " + p.y.ToString() + " ||| " + p.timesincestart.ToString() + " - " + p.timesincelastpause.ToString() + "  |||";
+
+            }
+
+
+            return ret;
         }
         
     }

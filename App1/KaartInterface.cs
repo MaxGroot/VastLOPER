@@ -116,7 +116,7 @@ namespace Kaart
 
         // Analyse knop: Stuur de track en haar info door naar de analyzeinterface
         public void GotoAnalyze(object o, EventArgs ea) {
-            List<float[]> track = info.trackpoints;
+            List<knooppunt> track = info.trackpoints;
             string trackstring = TrackAnalyzer.Track_Stringify(track);
 
             Intent i;
@@ -149,16 +149,15 @@ namespace Kaart
 
         // De gebruiker wil door met opslaan. Laten we dat doen!
         public void SaveConfirmed(object o, EventArgs ea) {
-            List<float[]> track = info.trackpoints;
+            List<knooppunt> track = info.trackpoints;
             // Coderen..
             string trackstring = TrackAnalyzer.Track_Stringify(track);
             string trackname = inputvakje.Text;
             
             // Maak een saveload instantie...
             saveload saver = new saveload();
-            float pauzetijd = info.pauseseconds; 
             // En sla de track op!
-            saver.save_track(trackstring, DateTime.Now, trackname , pauzetijd);
+            saver.save_track(trackstring, DateTime.Now, trackname);
             Toast.MakeText(this, trackname + " opgeslagen. ", ToastLength.Short).Show();
 
 

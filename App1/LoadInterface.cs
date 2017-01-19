@@ -25,7 +25,9 @@ namespace Kaart
             paden = new List<TrackInfo>();
             saveload saver = new saveload();
             paden = saver.load_track();
-            
+
+            // Zorgt ervoor dat we ipv oud naar nieuw van nieuw naar oud gaan.
+            paden.Reverse();
 
             List<String> padennamen = new List<String>();
 
@@ -66,8 +68,7 @@ namespace Kaart
             i.PutExtra("trackstring", gekozenpad.trackstring);
             i.PutExtra("timestring", gekozenpad.timedate.ToString("dd-MM-yyyy"));
             i.PutExtra("name", gekozenpad.name);
-            i.PutExtra("pauseseconds", gekozenpad.pauseseconds);
-
+            
             // En analyseren kan beginnen!
             this.StartActivity(i);
 
