@@ -59,8 +59,6 @@ namespace Kaart
         }
 
         public static float Track_Total_Distance(List<knooppunt> track)           // Returnt de totale afstand in meters.
-
-
         {
             float totaldistance = 0f;
             knooppunt oudepunt = new knooppunt();
@@ -84,8 +82,17 @@ namespace Kaart
                         // Helaas! De afstand afgelegd is de afstand sinds de pauze. deze telt NIET mee.
                     }
                     else {
-                        // Hoppa! Een afstand tussen twee gelopen punten! Deze telt mee.
-                        totaldistance += PuntAfstand(nieuwepunt, oudepunt);
+                        if (nieuwepunt.ispause)
+                        {
+                            // Dit is een pauze-knooppunt. Het verschil tussen een pauze-knooppunt en het laatste loop-knooppunt daarvoor telt helaas niet mee.
+                        }
+                        else
+                        {
+                            // Hoppa! Een afstand tussen twee gelopen punten! Deze telt mee.
+                            totaldistance += PuntAfstand(nieuwepunt, oudepunt);
+                        }
+
+
                     }
 
 
@@ -108,7 +115,31 @@ namespace Kaart
             return (track[track.Count - 1]).timesincestart;
         }
 
+        public static float Track_Total_PauseTime(List<knooppunt> track) {
+            float totalpausetime = 0f;
+            knooppunt oudepunt = new knooppunt();
+            knooppunt nieuwepunt = new knooppunt();
+            int i = 0;
+            foreach (knooppunt p in track) {
+                nieuwepunt = p;
+                if (i > 0) {
+                    // Niet het eerste punt dus!
+                    if (oudepunt.ispause) {
+                        // Hoppa! Het vorige punt was een pauze, wat het huidige punt automatisch een nieuw looppunt maakt. Het tijdsverschil tussen
+                        // de twee is de pauzetijd!
+                        totalpausetime += PuntTijdVerschil(nieuwepunt, oudepunt);
+                    }
 
+
+                }
+
+                i++;
+                oudepunt = nieuwepunt;
+
+            }
+            return totalpausetime;
+
+        }
 
         public static float Track_Total_Time_Running(List<knooppunt> track) // Returnt de totale tijd doorgebracht op de track, pauzes niet meegerekend
         {
@@ -192,7 +223,6 @@ namespace Kaart
 
             // Voorlopig geeft hij de gecodeerde track terug ipv een mooie samenvatting, zo kunnen we 
             // een keer hardlopen en een mooie faketrack naar onszelf sturen
-            return Track_Stringify(track);
             
 
             float totaldistance = Track_Total_Distance(track) / 1000;
@@ -201,9 +231,10 @@ namespace Kaart
 
             float avgspeedincluded = Track_Average_Speed(track, true);
             float avgspeedexcluded = Track_Average_Speed(track, false);
+            float totalpausetime = Track_Total_PauseTime(track);
 
-
-            return $"Totale afstand: {totaldistance} kilometer \r\n Totale tijd: {totaltime} seconden \r\n Totale tijd rennend: {totalrunningtime} Gemiddelde snelheid, pauzes meegerekend: {avgspeedincluded} \r\n pauzes niet meegerekend: {avgspeedexcluded}";
+            String trackstringified = Track_Stringify(track);
+            return $"Totale afstand: {totaldistance} kilometer \r\n Totale tijd: {totaltime} seconden \r\n Totale tijd rennend: {totalrunningtime} Gemiddelde snelheid, pauzes meegerekend: {avgspeedincluded} \r\n pauzes niet meegerekend: {avgspeedexcluded} \r\n Totale pauzetijd: {totalpausetime} \r\n Encoded track: {trackstringified}";
 
         }
 
@@ -262,7 +293,28 @@ namespace Kaart
 
         public static String Track_Debugstring(List<knooppunt> track) {
             String ret = "";
+            knooppunt nieuwepunt = new knooppunt();
+            knooppunt oudepunt = new knooppunt();
+            int i = 0;
             foreach (knooppunt p in track) {
+                nieuwepunt = p;
+
+                if (i > 0) {
+                    if (oudepunt.ispause)
+                    {
+                        ret += "\r\n pause: " + PuntAfstand(oudepunt, nieuwepunt).ToString() + " , at " + PuntSnelheid(oudepunt, nieuwepunt).ToString() + "km/u (Duration: " + PuntTijdVerschil(oudepunt,nieuwepunt).ToString() + ")";
+                    }
+                    else {
+                        if (nieuwepunt.ispause)
+                        {
+                                // Voorafgaand aan een pauze is niks. 
+                        }
+                        else
+                        {
+                            ret += "\r\n distance - " + PuntAfstand(oudepunt, nieuwepunt) + "m , at" + PuntSnelheid(oudepunt, nieuwepunt) + " km/u";
+                        }
+                    }
+                }
                 ret += "\r\n";
                 if (p.ispause)
                 {
@@ -273,6 +325,8 @@ namespace Kaart
                 }
                 ret += p.x.ToString() + ", " + p.y.ToString() + " ||| " + p.timesincestart.ToString() + " - " + p.timesincelastpause.ToString() + "  |||";
 
+                i++;
+                oudepunt = nieuwepunt;
             }
 
 

@@ -40,6 +40,7 @@ namespace Kaart
                 // Geef informatie erover weer. Joost, hier mag jij los! Ik zou het natuurlijk niet meer op een knoppie weergeven straks :P
                 //knoptekst += "Total distance: "  + (TrackAnalyzer.Track_Total_Distance(track) / 1000f).ToString();
                 knoptekst = TrackAnalyzer.Track_Debugstring(track);
+                knoptekst += "\r\n " + TrackAnalyzer.Track_Share_String(track);
                 knoppie.Text = knoptekst;
 
             }
