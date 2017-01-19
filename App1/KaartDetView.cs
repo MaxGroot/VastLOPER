@@ -21,6 +21,8 @@ namespace Kaart
         public bool fake = true; // Op het moment wordt nog de fake-track weergegeven
         DateTime startmoment; // Startmoment is voor elk punt om zijn verschil in seconden tov van het starten/resumen van het lopen te bepalen.
 
+        public float pauseseconds = 0f; // Totale pauzetijd.
+        DateTime pauzestart; // Een datetime die vastlegt op welk moment de laatste pauze was.
 
         public List<float[]> trackpoints = new List<float[]>(); // Het opgenomen track volgens Max!!
         List<float[]> faketrack = new List<float[]>();
@@ -118,6 +120,14 @@ namespace Kaart
 
             }
 
+            // Teken een debugvierkant
+            /*
+            Rect vierkantje = new Rect(0, 0, this.Width, 120);
+            Paint emoverf = new Paint(); emoverf.Color = Color.Black;
+            Paint tekstverf = new Paint(); tekstverf.Color = Color.White;
+            canvas.DrawRect(vierkantje, emoverf);
+            canvas.DrawText("Totale pauzetijd: " + pauseseconds.ToString(), 24, 24, tekstverf);
+            */
            
         }
 
@@ -177,10 +187,28 @@ namespace Kaart
         }
         public void Start(object o, EventArgs ea)
         {
-            if (fake) {
+            if (fake)
+            {
                 // De fake track is nog ingeladen in de display-track. Display track legen dus en deze variabele op false zetten. 
                 fake = false;
                 trackpoints.Clear();
+
+
+            }
+            else {
+                // Hé! Er is op stop gedrukt terwijl een echte track bezig was. Een pauze dus!
+                if (log)
+                {
+                    // Er is op stop gedrukt!
+                    
+                }
+                else {
+                    // Er is op start gedrukt! Dat betekent dat er hiervoor een pauze was. We gaan de pauzetijd optellen.
+                    TimeSpan verschil = DateTime.Now.Subtract(pauzestart);
+                    pauseseconds += (float) verschil.TotalSeconds; 
+
+                }
+                pauzestart = DateTime.Now;
 
 
             }

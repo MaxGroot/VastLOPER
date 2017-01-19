@@ -156,9 +156,9 @@ namespace Kaart
             
             // Maak een saveload instantie...
             saveload saver = new saveload();
-
+            float pauzetijd = info.pauseseconds; 
             // En sla de track op!
-            saver.save_track(trackstring, DateTime.Now, trackname);
+            saver.save_track(trackstring, DateTime.Now, trackname , pauzetijd);
             Toast.MakeText(this, trackname + " opgeslagen. ", ToastLength.Short).Show();
 
 

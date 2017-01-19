@@ -24,18 +24,19 @@ namespace Kaart
         public string trackstring { get; set; }
         public DateTime timedate { get; set; }
         public string name { get; set; }
+        public float pauseseconds { get; set; }
 
         // Lege constructor is vereist, geen idee waarom maar het is zo.
         public TrackInfo() {
 
         }
         // De constructor die wij gaan gebruiken. 
-        public TrackInfo(String str, DateTime timedate , String name) {
+        public TrackInfo(String str, DateTime timedate , String name , float pauseseconds) {
 
             this.trackstring = str;
             this.timedate = timedate;
             this.name = name;
-
+            this.pauseseconds = pauseseconds;
 
         }
 
@@ -68,8 +69,8 @@ namespace Kaart
         }
 
         // Sla een track op
-        public void save_track(String trackstring,DateTime timedate, String name) {
-            TrackInfo info = new Kaart.TrackInfo(trackstring, timedate, name);
+        public void save_track(String trackstring,DateTime timedate, String name , float pauseseconds) {
+            TrackInfo info = new Kaart.TrackInfo(trackstring, timedate, name, pauseseconds);
             database.Insert(info);
 
 

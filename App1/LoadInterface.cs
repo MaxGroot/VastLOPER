@@ -66,6 +66,7 @@ namespace Kaart
             i.PutExtra("trackstring", gekozenpad.trackstring);
             i.PutExtra("timestring", gekozenpad.timedate.ToString("dd-MM-yyyy"));
             i.PutExtra("name", gekozenpad.name);
+            i.PutExtra("pauseseconds", gekozenpad.pauseseconds);
 
             // En analyseren kan beginnen!
             this.StartActivity(i);
