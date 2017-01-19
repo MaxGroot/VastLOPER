@@ -238,6 +238,56 @@ namespace Kaart
 
         }
 
+        public static List<float> Track_List_Speed_OverTime(List<knooppunt> track , bool speeds) {
+            List<float> ret = new List<float>();
+            knooppunt oudepunt = new Kaart.knooppunt();
+            knooppunt nieuwepunt = new Kaart.knooppunt();
+            int i = 0;
+            foreach (knooppunt p in track) {
+                nieuwepunt = p;
+
+                if (i > 0) {
+                    if (!nieuwepunt.ispause)
+                    {
+                        // Joepie dit punt is geen pauze. Misschien de vorige?
+                        if (!oudepunt.ispause)
+                        {
+                            // Het vorige ook niet! Nice nu kunnen we de snelheid opschrijven.
+                            if (speeds)
+                            {
+                                // De aanroeper wil de snelheid weten 
+                                ret.Add(PuntSnelheid(nieuwepunt, oudepunt));
+                            }
+                            else
+                            {
+                                // De aanroeper wil de tijd weten
+                                ret.Add(nieuwepunt.timesincestart);
+                            }
+                        }
+                        else
+                        {
+                            // Het vorige punt was een pauze. 
+                        }
+                    }
+                    else {
+                        // Dit punt is een pauze. We moeten hier een snelheid van 0 injecteren zodat er een drop is in de grafiek straks.
+                        if (speeds)
+                        {
+                            ret.Add(0f);
+                        }
+                        else {
+                            ret.Add(nieuwepunt.timesincestart);
+                        }
+                    }
+                }
+
+                i++;
+                oudepunt = nieuwepunt;
+            }
+            return ret;
+            
+        }
+
         // Codeer een track naar een string
         public static string Track_Stringify(List<knooppunt> track) {
             string ret = "";

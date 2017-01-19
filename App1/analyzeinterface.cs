@@ -31,6 +31,7 @@ namespace Kaart
             {
                 // Huh: geen informatie.
                 knoppie.Text = "ERROR";
+                this.SetContentView(knoppie);
             }
             else {
                 // Decodeer de track
@@ -39,12 +40,15 @@ namespace Kaart
 
                 // Geef informatie erover weer. Joost, hier mag jij los! Ik zou het natuurlijk niet meer op een knoppie weergeven straks :P
                 //knoptekst += "Total distance: "  + (TrackAnalyzer.Track_Total_Distance(track) / 1000f).ToString();
-                knoptekst = TrackAnalyzer.Track_Debugstring(track);
-                knoptekst += "\r\n " + TrackAnalyzer.Track_Share_String(track);
-                knoppie.Text = knoptekst;
-
+                //knoptekst = TrackAnalyzer.Track_Debugstring(track);
+               // knoptekst += "\r\n " + TrackAnalyzer.Track_Share_String(track);
+               
+                graphview grafiek = new Kaart.graphview(this);
+                grafiek.Set_Axis_List_One(TrackAnalyzer.Track_List_Speed_OverTime(track, true));
+                grafiek.Set_Axis_List_Two(TrackAnalyzer.Track_List_Speed_OverTime(track, false));
+                this.SetContentView(grafiek);
             }
-            this.SetContentView(knoppie);
+
 
         }
 

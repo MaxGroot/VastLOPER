@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="analyzeinterface.cs" />
+    <Compile Include="graphview.cs" />
     <Compile Include="saveload.cs" />
     <Compile Include="sqlite.cs" />
     <Compile Include="LoadInterface.cs" />
