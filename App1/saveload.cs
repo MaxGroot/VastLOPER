@@ -15,6 +15,7 @@ using SQLite;
 
 namespace Kaart
 {
+    // Functie: deze instantie is een blueprint voor de database. Het bevat de trackstring, de timedate, en de naam.
     class TrackInfo {
 
         [PrimaryKey, AutoIncrement]
@@ -24,10 +25,11 @@ namespace Kaart
         public DateTime timedate { get; set; }
         public string name { get; set; }
 
+        // Lege constructor is vereist, geen idee waarom maar het is zo.
         public TrackInfo() {
 
         }
-
+        // De constructor die wij gaan gebruiken. 
         public TrackInfo(String str, DateTime timedate , String name) {
 
             this.trackstring = str;
@@ -38,6 +40,8 @@ namespace Kaart
         }
 
     }
+
+    // Functie: Bij constructor wordt de SQLite verbinding gemaakt, en bij save_track en load_track kunnen tracks worden gesaved en geladen.
     class saveload
     {
 
@@ -63,13 +67,14 @@ namespace Kaart
             }
         }
 
+        // Sla een track op
         public void save_track(String trackstring,DateTime timedate, String name) {
             TrackInfo info = new Kaart.TrackInfo(trackstring, timedate, name);
             database.Insert(info);
 
 
         }
-
+        // Geef een lijst van TrackInfo instanties en stuur die terug.
         public List<TrackInfo> load_track() {
             List<TrackInfo> returnlist = new List<TrackInfo>();
              

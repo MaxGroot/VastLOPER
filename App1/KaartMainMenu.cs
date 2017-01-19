@@ -11,6 +11,8 @@ using Android.Locations;
 namespace Kaart
 {
     [Activity(Theme = "@android:style/Theme.NoTitleBar", Label = "vastLOPER", MainLauncher = true, Icon = "@drawable/icon")]
+
+    // Functie: het startscherm van de app.
     public class MainMenu : Activity
     {
 
@@ -32,7 +34,7 @@ namespace Kaart
 
 
 
-
+            // Linearlayout opbouwen
             LinearLayout knoppen = new LinearLayout(this);
             knoppen.Orientation = Orientation.Vertical;
             knoppen.AddView(nieuw);
@@ -58,21 +60,21 @@ namespace Kaart
 
         }
 
-
+        // De gebruiker heeft start tocht aangeroepen
         public void startTocht(object o, EventArgs ea) {
             Intent i;
             i = new Intent(this,typeof(KaartInterface));
             this.StartActivity(i);
 
         }
-
+        // De gbeuriker heeft laden aangeroepen
         public void laadTocht(object o, EventArgs ea) {
 
             Intent i = new Intent(this, typeof(LoadInterface));
             this.StartActivity(i);
 
         }
-
+        // De gebruiker heeft afsluiten aangeroepen.
         public void Afsluiten(object o, EventArgs ea) {
             System.Environment.Exit(0);
         }

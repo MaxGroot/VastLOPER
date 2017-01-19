@@ -11,6 +11,7 @@ using System.Collections.Generic;
 
 namespace Kaart
 {
+    // Functie: Dit is de interface die uiteindelijk de kaartdetview op het scherm zet, samen met de knoppen eromheen.
     [Activity(Theme = "@android:style/Theme.NoTitleBar",  Label = "vastLOPER")]
     public class KaartInterface : Activity
     {
@@ -21,7 +22,8 @@ namespace Kaart
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
-             inputvakje = new EditText(this);
+            // Dit inputvakje hebben we nodig voor het naam-geven van een track.
+            inputvakje = new EditText(this);
 
 
 
@@ -70,7 +72,7 @@ namespace Kaart
              info = new Kaart.KaartDetView(this);
 
 
-            // Handlers voor klikken op knoppen
+            // Handlers voor klikken op bovenknoppen
             centreerknop.Click += info.Centreer;
             leegknop.Click += info.Schoon;
             startstopknop.Click += info.Start;
@@ -89,7 +91,7 @@ namespace Kaart
             this.SetContentView(viewstapel);
 
         }
-
+        // Delen van een track.
         public void shareTrack(object o, EventArgs ea) {
 
             string bericht = info.TrackText(); 
@@ -100,6 +102,7 @@ namespace Kaart
 
         }
 
+        // Zorgt ervoor dat de startstopknop de juiste tekst weergeeft bij starten en stoppen
         public void SetStartButton(object o, EventArgs ea) {
             bool running = info.log;
             if (running)
@@ -111,6 +114,7 @@ namespace Kaart
             }
         }
 
+        // Analyse knop: Stuur de track en haar info door naar de analyzeinterface
         public void GotoAnalyze(object o, EventArgs ea) {
             List<float[]> track = info.trackpoints;
             string trackstring = TrackAnalyzer.Track_Stringify(track);
@@ -124,8 +128,10 @@ namespace Kaart
             this.StartActivity(i);
 
         }
+
+        // Geef de gebruiker een mogelijk om zijn track een naam te geven. Gebeurt dit, verwijs dan door naar de functie SaveConfirmed
         public void SavePressed(object o, EventArgs ea) {
-            //set alert for executing the task
+            // Bouw de alert en tovert m op het scherm!
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.SetTitle("Naam voor uw tocht");
             alert.SetView(inputvakje);
@@ -140,13 +146,18 @@ namespace Kaart
             Dialog dialog = alert.Create();
             dialog.Show();
         }
+
+        // De gebruiker wil door met opslaan. Laten we dat doen!
         public void SaveConfirmed(object o, EventArgs ea) {
             List<float[]> track = info.trackpoints;
+            // Coderen..
             string trackstring = TrackAnalyzer.Track_Stringify(track);
             string trackname = inputvakje.Text;
             
+            // Maak een saveload instantie...
             saveload saver = new saveload();
 
+            // En sla de track op!
             saver.save_track(trackstring, DateTime.Now, trackname);
             Toast.MakeText(this, trackname + " opgeslagen. ", ToastLength.Short).Show();
 

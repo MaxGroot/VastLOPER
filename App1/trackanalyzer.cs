@@ -9,35 +9,41 @@ using System.Collections.Generic;  // vanwege List
 
 namespace Kaart
 {
+    // Deze class bevat functies voor het coderen, decoderen en analyzeren van tracks en knooppunten.
     class TrackAnalyzer
     {
 
-        public static float PuntAfstand(PointF een, PointF twee)
+        public static float PuntAfstand(PointF een, PointF twee) // Returnt de afstand in meters tussen twee  RD punten.
+
         {
-            // Returnt de afstand in meters tussen twee  RD punten.
             float afstandX = Math.Abs(een.X - twee.X);
             float afstandY = Math.Abs(een.Y - twee.Y);
             return afstandX + afstandY;
         }
 
-        public static float PuntSnelheid(PointF een, PointF twee, float tijdverschil)
+        public static float PuntSnelheid(PointF een, PointF twee, float tijdverschil) // Returnt de snelheid tussen twee punten in kilometers per uur.
+
         {
-            // Returnt de snelheid tussen twee punten in kilometers per uur.
             tijdverschil = Math.Abs(tijdverschil);
 
             float afstand = PuntAfstand(een, twee);
 
+            // Keer 3.6 om van meters per seconde naar kilometers per uur te gaan
             return (afstand / tijdverschil) * 3.6f;
 
 
         }
 
-        public static float Track_Total_Distance(List<float[]> track)
-        {            // Returnt de totale afstand in meters.
+        public static float Track_Total_Distance(List<float[]> track)           // Returnt de totale afstand in meters.
+
+
+        {
             float totaldistance = 0f;
             PointF oudepunt = new PointF();
             PointF ditpunt = new PointF();
             int i = 0;
+
+            // Alle punten aflopen en de afstand met het vorige punt optellen aan de totale afstand variabele (totaldistance)
             foreach (float[] punt in track)
             {
                 if (i == 0)
@@ -56,6 +62,7 @@ namespace Kaart
 
                 }
 
+                // Oudepunt voor de volgende, is het huidige punt.
                 oudepunt.X = punt[0]; oudepunt.Y = punt[1];
 
                 i++;
@@ -64,8 +71,10 @@ namespace Kaart
             return totaldistance;
         }
 
-        public static float Track_Total_Time(List<float[]> track)
+        
+        public static float Track_Total_Time(List<float[]> track) // Returnt de totale tijd doorgebracht op de track, pauzes meegerekend
         {
+            // Deze werking is incorrect!
             float[] eerstepunt = track[0];
             float[] laatstepunt = track[track.Count - 1];
 
@@ -73,18 +82,19 @@ namespace Kaart
             return verschilinseconden;
         }
 
-        public static float Track_Total_Time_Running(List<float[]> track)
+        public static float Track_Total_Time_Running(List<float[]> track) // Returnt de totale tijd doorgebracht op de track, pauzes niet meegerekend
         {
             List<float> snelheden = new List<float>();
             int i = 0;
             float[] oudepunt = { };
             float[] nieuwepunt = { };
 
+            // Alle punten afgaan, en de snelheid tov vorige punt toevoegen aan de list 'snelheden'.
             foreach (float[] punt in track)
             {
                 nieuwepunt = punt;
 
-
+               
                 if (i == 0)
                 {
                     // Eerstepunt, geen snelheidcalculatie mogelijk
@@ -114,7 +124,7 @@ namespace Kaart
 
         }
 
-        public static float Track_Average_Speed(List<float[]> track, bool includepause)
+        public static float Track_Average_Speed(List<float[]> track, bool includepause) // De gemiddelde snelheid op een track, bool geeft aan of pauzes meetellen voor gem. snelheid
         {
             float trackdistance = Track_Total_Distance(track);
 
@@ -138,8 +148,9 @@ namespace Kaart
             }
 
         }
-
-        public static string Track_Debug_String(List<float[]> track)
+        
+        public static string Track_Debug_String(List<float[]> track) // Functie is obsolete en eigenlijk niet zo bruikbaar meer nu tracks naar strings omgezet kunnen worden
+            
         {
             String ret = "";
             int i = 0;
@@ -176,11 +187,14 @@ namespace Kaart
             return ret;
         }
 
+        // Returnt de string die gebruikers over hun track kunnen delen.
         public static string Track_Share_String(List<float[]> track)
         {
-            return Track_Stringify(track);
-            return Track_Debug_String(track);
 
+            // Voorlopig geeft hij de gecodeerde track terug ipv een mooie samenvatting, zo kunnen we 
+            // een keer hardlopen en een mooie faketrack naar onszelf sturen
+            return Track_Stringify(track);
+            
 
             float totaldistance = Track_Total_Distance(track) / 1000;
             float totaltime = Track_Total_Time(track);
@@ -194,15 +208,22 @@ namespace Kaart
 
         }
 
+        // Codeer een track naar een string
         public static string Track_Stringify(List<float[]> track) {
             string ret = "";
             int i = 0;
+            // Voor alle punten..
             foreach (float[] punt in track) {
                 i++;
                 string add = "";
+
+                // Formaat: x?y?tijd
                 add += punt[0].ToString() + "?" + punt[1].ToString() + "?" + punt[2].ToString();
+
+                // En als het niet het laatste punt is...
                 if (i < track.Count)
                 {
+                    // Scheiden door een |
                     add += "|";
                 }
 
@@ -212,20 +233,25 @@ namespace Kaart
             return ret;
         }
          
+        // Codeer een string naar een track!
         public static List<float[]> String_Trackify(string trackstring) {
             List<float[]> track = new List<float[]>();
+            // Splitst de string op in punten die we gaan analyseren
             string[] punten = trackstring.Split('|');
             
+            // Voor al die punten..
             foreach (string punt in punten) {
-               
+               // Splits de punten in waarden die we kunnen toewijzen.
                 string[] puntdata = punt.Split('?');
                 int i = 0;
                 float[] floatpunt = new float[3];
+                // Laad de data van de string in de float
                 foreach (string puntstuk in puntdata) {
                     floatpunt[i] = float.Parse(puntstuk);
                     
                     i++;
                 }
+                // En die float is een track knooppunt!
                 track.Add(floatpunt);
             }
 

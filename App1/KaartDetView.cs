@@ -9,14 +9,17 @@ using System.Collections.Generic;  // vanwege List
 
 namespace Kaart
 {
+    // Functie: Het construeren van de KaartDetView, de zichtbare kaart en tekeningen daarop binnen de kaartinterface.
+
     class KaartDetView : View, ISensorEventListener, ILocationListener, ScaleGestureDetector.IOnScaleGestureListener, GestureDetector.IOnGestureListener
     {
         Bitmap Plaatje, Pijl;  // de bitmaps van de kaart en de locatie-marker
         float Hoek;            // de rotatie van de locatie-marker
-        float Schaal;          // de schaal van de kaart
+        float Schaal;          // de schaal van de kaar
+
         public bool log = false;      // wordt er op dit moment een track opgenomen?
         public bool fake = true; // Op het moment wordt nog de fake-track weergegeven
-        DateTime startmoment;
+        DateTime startmoment; // Startmoment is voor elk punt om zijn verschil in seconden tov van het starten/resumen van het lopen te bepalen.
 
 
         public List<float[]> trackpoints = new List<float[]>(); // Het opgenomen track volgens Max!!
@@ -34,6 +37,7 @@ namespace Kaart
        
         public KaartDetView(Context c) : base(c)
         {
+            // faketrackstring decoderen naar een echte track.
             faketrack = TrackAnalyzer.String_Trackify(faketrackstring);
             trackpoints = faketrack; // Voor nu displayen we nog de fake-track. 
 
@@ -85,7 +89,7 @@ namespace Kaart
             mat.PostTranslate(this.Width / 2, this.Height / 2);
             canvas.DrawBitmap(this.Plaatje, mat, verf);
             
-            // Teken de location-marker
+            // Teken de location-marker vóór het pad, zodat het pad over de pijl heen gaat. Dat vind ik namelijk mooier. :D
             mat = new Matrix();
             mat.PostTranslate(-Pijl.Width / 2, -Pijl.Height / 2);
             mat.PostRotate(this.Hoek);
@@ -136,10 +140,12 @@ namespace Kaart
 
             if (log)
             {
+                // Bepaal aantal seconden dat de gebruiker erover heeft gedaan sinds de resume/start vh lopen om op dit punt te komen.
                 TimeSpan verschil = DateTime.Now.Subtract(startmoment);
                 
                 float verschilseconden = (float) verschil.TotalSeconds;
 
+                // Een trackpunt is niet langer een PointF, maar een float array met zijn x, y en verschil in seconden.
                 float[] trackpunt = new float[3];
                 trackpunt[0] = huidigPos.X;
                 trackpunt[1] = huidigPos.Y;
@@ -179,6 +185,8 @@ namespace Kaart
 
             }
             this.log = !this.log;
+
+            // Meest recente startmoment vastleggen.
             startmoment = DateTime.Now; 
 
 
@@ -243,6 +251,7 @@ namespace Kaart
             return true;
         }
 
+        // Deze functie wordt van buitenaf gecalled als de track gedeeld moet wortden.
         public string TrackText() {
             return TrackAnalyzer.Track_Share_String(trackpoints);
         }

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 namespace Kaart
 {
     [Activity(Theme = "@android:style/Theme.NoTitleBar", Label = "vastLOPER")]
+    // Functie: Het weergeven van het analysescherm.
     public class Analyzeinterface : Activity
     {
 
@@ -20,18 +21,23 @@ namespace Kaart
             base.OnCreate(bundle);
 
             Button knoppie = new Button(this);
+
+            // Laad de doorgegeven informatie (track, naam en datum) in.
             string trackstring = this.Intent.GetStringExtra("trackstring");
             string timestring = this.Intent.GetStringExtra("timestring");
             string name = this.Intent.GetStringExtra("name");
 
             if (trackstring == null)
             {
+                // Huh: geen informatie.
                 knoppie.Text = "ERROR";
             }
             else {
+                // Decodeer de track
                 List<float[]> track = TrackAnalyzer.String_Trackify(trackstring);
                 string knoptekst = "";
 
+                // Geef informatie erover weer. Joost, hier mag jij los! Ik zou het natuurlijk niet meer op een knoppie weergeven straks :P
                 knoptekst += "Total distance: "  + (TrackAnalyzer.Track_Total_Distance(track) / 1000f).ToString();
 
                 knoppie.Text = knoptekst;
