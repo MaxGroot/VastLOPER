@@ -43,11 +43,11 @@ namespace Kaart
                 // De globale statistieken van pagina 1.
                 TextView statistieken = new TextView(this); statistieken.TextSize = 18; statistieken.SetTextColor(Color.White);
                 statistieken.Text = $"Totale afstand: {(TrackAnalyzer.Track_Total_Distance(track) / 1000).ToString("0.00")} kilometer \r\n";
-                statistieken.Text += $"Gemiddelde snelheid, pauzes meegerekend: {TrackAnalyzer.Track_Average_Speed(track,true)} km/u \r\n";
-                statistieken.Text += $"Gemiddelde snelheid, pauzes niet meegerekend: {TrackAnalyzer.Track_Average_Speed(track,false)} km/u \r\n \r\n";
+                statistieken.Text += $"Gemiddelde snelheid, pauzes meegerekend: {TrackAnalyzer.Track_Average_Speed(track,true).ToString("0.0")} km/u \r\n";
+                statistieken.Text += $"Gemiddelde snelheid, pauzes niet meegerekend: {TrackAnalyzer.Track_Average_Speed(track,false).ToString("0.0")} km/u \r\n \r\n";
 
-                statistieken.Text += $"Totale pauzetijd: {TrackAnalyzer.Track_Total_PauseTime(track)} seconden \r\n";
-                statistieken.Text += $"Totale rentijd: {TrackAnalyzer.Track_Total_Time_Running(track)} seconden \r\n";
+                statistieken.Text += $"Totale pauzetijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_PauseTime(track))}  \r\n";
+                statistieken.Text += $"Totale rentijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_Time_Running(track))}  \r\n";
 
                 // De grafiek van snelheid over tijd van pagina 2.
                 graphview grafiek = new Kaart.graphview(this);

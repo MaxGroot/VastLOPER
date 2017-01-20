@@ -5,7 +5,10 @@ using Android.Content;    // vanwege Context
 using Android.Hardware;   // vanwege SensorManager, ISensorEventListener
 using Android.Locations;  // vanwege Location, ILocationListener
 using Android.OS;         // vanwege Bundle
-using System.Collections.Generic;  // vanwege List
+using System.Collections.Generic;  // vanwege Listusing Android.App;
+using Android.Widget;
+using Android.App;
+
 
 namespace Kaart
 {
@@ -26,18 +29,19 @@ namespace Kaart
 
         public List<knooppunt> trackpoints = new List<knooppunt>(); // Het opgenomen track volgens Max!!
         List<knooppunt> faketrack = new List<knooppunt>();
-
+        private Context toastercontext;
         ScaleGestureDetector Detector;
         GestureDetector Detector2;
 
         // De huidige positie, en het midden van de kaart, in RD-coordinaten
         PointF huidigPos = new PointF(138300, 454400);  // stadion: hier staat de location-pointer zolang de GPS nog niet wakker is
         PointF centrumPos = new PointF(139000, 455500);  // precies het midden van het kaartblad
-
+        
         // De faketrackstring, een resultaat van een eerdere track_stringify.
         const String faketrackstring = "140153,1?455083,7?7,754532?7,522213?False|140164,9?455034,4?22,75727?22,5254?False|140195,7?455033,9?30,79465?30,56279?False|140195,7?455033,9?35,94473?35,71283?True|140269,1?455056,6?63,11162?6,333959?False|140269,6?455078,7?69,25266?12,475?False|140262,2?455097,4?75,90218?19,12452?False|140246?455111,4?84,58216?27,8045?False";
         public KaartDetView(Context c) : base(c)
         {
+            toastercontext = c;
             // faketrackstring decoderen naar een echte track.
             faketrack = TrackAnalyzer.String_Trackify(faketrackstring);
             trackpoints = faketrack; // Voor nu displayen we nog de fake-track. 
@@ -66,9 +70,11 @@ namespace Kaart
 
             // Abonneren op scherm-aanrakingen
             this.Touch += RaakAan;
+            Toast.MakeText(c, " Locatie vaststellen... ", ToastLength.Short).Show();
 
 
         }
+
 
         protected override void OnDraw(Canvas canvas)
         {
@@ -84,6 +90,7 @@ namespace Kaart
             float middenX = (centrumPos.X - 136000) * 0.4f;
             float middenY = (458000 - centrumPos.Y) * 0.4f;
 
+            
             // Teken de kaart
             Matrix mat = new Matrix();
             mat.PostTranslate(-middenX, -middenY);
@@ -153,7 +160,13 @@ namespace Kaart
         // Implementatie van ILocationListener
         public void OnLocationChanged(Location loc)
         {
-            havelocation = true;
+            if (!havelocation)
+            {
+                // We hebben de locatie voor het eerst!
+                havelocation = true;
+                Toast.MakeText(toastercontext, " Locatie vastgesteld! Je kunt nu beginnen.  ", ToastLength.Short).Show();
+
+            }
             huidigPos = Projectie.Geo2RD(loc);
            
 
@@ -203,16 +216,18 @@ namespace Kaart
         {
             if (!havelocation) {
                 // Deze knop mag GEEN effect hebben als er nog geen locatie lock is.
-                Console.WriteLine("DICKS");
+                Toast.MakeText(toastercontext, " Je locatie is nog onbekend!", ToastLength.Short).Show();
+
                 return;
             }
             if (fake)
             {
                 // De fake track is nog ingeladen in de display-track. Display track legen dus en deze variabele op false zetten. 
-                Console.WriteLine("PIEMELS");
+                
                 fake = false;
                 trackpoints.Clear();
-                
+                Toast.MakeText(toastercontext, " Daar gaan we! ", ToastLength.Short).Show();
+
 
                 // Ook het startmoment vastleggen.
                 startmoment = DateTime.Now;
@@ -224,7 +239,8 @@ namespace Kaart
                 if (log)
                 {
                     // Er is op stop gedrukt! Pauze!! Die pauze moet in de track worden vastgelegd.
-                    Console.WriteLine("PAUZE");
+                    Toast.MakeText(toastercontext, " Lopen gepauzeerd. ", ToastLength.Short).Show();
+
                     TimeSpan pauzeverschil = DateTime.Now.Subtract(pauzemoment);
                     TimeSpan tijdverschil = DateTime.Now.Subtract(startmoment);
                     float pauzeverschilseconden = (float)pauzeverschil.TotalSeconds;
@@ -236,9 +252,10 @@ namespace Kaart
 
                 }
                 else {
-                    // Er is op start gedrukt! Dat betekent dat er hiervoor een pauze was. We gaan de pauzetijd optellen.
-                    
-                    Console.WriteLine("RESUME");
+                    // Er is op start gedrukt! Dat betekent dat er hiervoor een pauze was. 
+
+                    Toast.MakeText(toastercontext," Lopen hervat! ", ToastLength.Short).Show();
+
                 }
 
             }
@@ -254,6 +271,8 @@ namespace Kaart
         {
             this.trackpoints.Clear();
             this.Invalidate();
+            Toast.MakeText(toastercontext, " Track gewist. ", ToastLength.Short).Show();
+
         }
 
         // Implementatie IOnScaleGestureListener

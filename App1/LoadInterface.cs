@@ -48,8 +48,22 @@ namespace Kaart
             padendisplay.ChoiceMode = ChoiceMode.Single;
             padendisplay.ItemClick += GaLaden;
 
-        
-            this.SetContentView(padendisplay);
+            BitmapFactory.Options opt = new BitmapFactory.Options();
+            opt.InScaled = false;
+            Bitmap Plaatje = BitmapFactory.DecodeResource(this.Resources, Resource.Drawable.Icon, opt);
+
+            ImageView plaatjeview = new ImageView(this);
+            plaatjeview.SetImageBitmap(Plaatje);
+            
+            TextView titel = new TextView(this);
+            titel.SetTextColor(Color.White); titel.Text = "Laden"; titel.TextSize = 25; titel.Gravity = GravityFlags.CenterHorizontal;
+
+            LinearLayout stapel = new LinearLayout(this);
+            stapel.AddView(plaatjeview);
+            stapel.AddView(titel);
+            stapel.AddView(padendisplay);
+            stapel.Orientation = Orientation.Vertical;
+            this.SetContentView(stapel);
 
         }
 

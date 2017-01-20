@@ -69,7 +69,7 @@ namespace Kaart
 
             // Teken benoemde uiteinden
             canvas.DrawText(Axis_Name_One + "\r\n " + Axis_List_One.Max().ToString("0.0"), 0, starty - 24, tekstverf); // Linksboven
-            canvas.DrawText(Axis_List_Two.Max().ToString("0.0") + "\r\n" + Axis_Name_Two , eindx, eindy + 34, tekstverf); // Rechtsonder
+            canvas.DrawText(TrackAnalyzer.Seconds_ToReadAble(Axis_List_Two.Max()) + "\r\n" + Axis_Name_Two , eindx, eindy + 34, tekstverf); // Rechtsonder
 
             // Bereken de impact van verschillen in de waarden op de assen tov coordinaten op het scherm
 
@@ -109,7 +109,7 @@ namespace Kaart
 
                 float kwadrantx = startx + (i * streepjespauze);
                 canvas.DrawLine(kwadrantx, eindy - 8, kwadrantx, eindy + 8, black);
-                canvas.DrawText((kwadranttijdfactor * i).ToString("0.0"), kwadrantx, eindy + 34, tekstverf);
+                canvas.DrawText(TrackAnalyzer.Seconds_ToReadAble(kwadranttijdfactor * i), kwadrantx, eindy + 34, tekstverf);
 
             }
 

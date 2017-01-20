@@ -315,7 +315,7 @@ namespace Kaart
                             {
                                 // De aanroeper wil de snelheid weten 
 
-                                float komterbij = PuntAfstand(nieuwepunt, oudepunt);
+                                float komterbij = (PuntAfstand(nieuwepunt, oudepunt)/1000f);
                                 ret.Add(komterbij + alafgelegd);
 
                                 // Deze regel maakt de lijst cumulatief ipv elke keer de afgelegde afstand erbij.
@@ -447,7 +447,34 @@ namespace Kaart
 
             return ret;
         }
-        
+
+        public static String Seconds_ToReadAble(float seconds) {
+            String ret = "";
+            int hours = (int)seconds / 3600;
+            int minutes = (int)seconds / 60 - (hours * 60);
+            int secondsint = (int)seconds - (minutes * 60) - (hours *3600);
+
+            if (hours > 0) {
+                ret += hours.ToString("0") +":";
+            }
+            if (minutes > 0) {
+                if (minutes < 10) {
+                    ret += "0";
+                }
+                ret += minutes.ToString("0") + ":";
+            }
+            if (secondsint < 10) {
+                ret += "0";
+            }
+
+            ret += secondsint.ToString("0") + "";
+            if (minutes == 0 && hours ==0) {
+                ret += " seconden";
+            }
+
+            return ret;
+        }
+
     }
 
 }

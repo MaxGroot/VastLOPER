@@ -20,11 +20,21 @@ namespace Kaart
         {
             base.OnCreate(bundle);
 
+            BitmapFactory.Options opt = new BitmapFactory.Options();
+            opt.InScaled = false;
+            Bitmap Plaatje = BitmapFactory.DecodeResource(this.Resources, Resource.Drawable.Icon, opt);
+
+            ImageView plaatjeview = new ImageView(this);
+            plaatjeview.SetImageBitmap(Plaatje);
+
 
 
             // Knoppen
             Button nieuw = new Button(this);
             nieuw.Text = "Nieuwe tocht";
+
+            nieuw.OffsetTopAndBottom(30);
+            nieuw.SetPadding(10, 10, 10, 10);
 
             Button tochtjes = new Button(this);
             tochtjes.Text = "Tocht laden";
@@ -37,6 +47,7 @@ namespace Kaart
             // Linearlayout opbouwen
             LinearLayout knoppen = new LinearLayout(this);
             knoppen.Orientation = Orientation.Vertical;
+            
             knoppen.AddView(nieuw);
             knoppen.AddView(tochtjes);
             knoppen.AddView(afsluiten);
@@ -46,15 +57,27 @@ namespace Kaart
             // Handlers voor klikken op knoppen
             nieuw.Click += startTocht;
             tochtjes.Click += laadTocht;
-            afsluiten.Click += Afsluiten; 
+            afsluiten.Click += Afsluiten;
 
             // Stapel bovenstaande views op elkaar en zet ze op het scherm. 
+            TextView titel = new TextView(this);
+            titel.SetTextColor(Color.White); titel.Text = "vastLOPER"; titel.TextSize = 40; titel.Gravity = GravityFlags.CenterHorizontal;
+            TextView credits = new TextView(this);
+            credits.SetTextColor(Color.White); credits.Text = "Max Groot en Joost Kwakkel, 2017"; titel.TextSize = 18;
+
+            LinearLayout titelview = new LinearLayout(this);
+            titelview.Orientation = Orientation.Vertical;
+            titelview.AddView(titel);
+
+
             LinearLayout viewstapel = new LinearLayout(this);
 
             viewstapel.Orientation = Orientation.Vertical;
-            
-            viewstapel.AddView(knoppen);
 
+            viewstapel.AddView(plaatjeview);
+            viewstapel.AddView(titelview);
+            viewstapel.AddView(knoppen);
+            viewstapel.AddView(credits);
 
             this.SetContentView(viewstapel);
 
@@ -67,7 +90,7 @@ namespace Kaart
             this.StartActivity(i);
 
         }
-        // De gbeuriker heeft laden aangeroepen
+        // De gebuiker heeft laden aangeroepen
         public void laadTocht(object o, EventArgs ea) {
 
             Intent i = new Intent(this, typeof(LoadInterface));
