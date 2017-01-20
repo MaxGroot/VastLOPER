@@ -60,8 +60,7 @@ namespace Kaart
             // Verfjes
             Paint black = new Paint(); black.Color = Color.Black;
             Paint red = new Paint(); red.Color = Color.Red;
-            Paint blue = new Paint(); blue.Color = Color.Blue; blue.StrokeWidth = 18;
-            Paint pink = new Paint(); pink.Color = Color.Pink; pink.StrokeWidth = 18;
+            Paint blue = new Paint(); blue.Color = Color.Blue; blue.StrokeWidth = 8 + (30 / Axis_List_One.Count);
             Paint tekstverf = new Paint(); tekstverf.Color = Color.Black; tekstverf.TextSize = 24;
             Paint grijsverf = new Paint(); grijsverf.Color = Color.LightGray;
             Paint witverf = new Paint(); witverf.Color = Color.White;
@@ -98,7 +97,7 @@ namespace Kaart
                      verfje = grijsverf;
                 }
                 canvas.DrawRect(startx, kwadranty, eindx, kwadranty + offsettoground, verfje);
-                canvas.DrawText((List_Lowest_Not_Null(Axis_List_One) + (kwadrantsnelheidfactor * i)).ToString("0.0"), 0, kwadranty + offsettoground, tekstverf);
+                canvas.DrawText((List_Lowest_Not_Null(Axis_List_One) + (kwadrantsnelheidfactor * (i-1))).ToString("0.0"), 0, kwadranty + offsettoground, tekstverf);
             }
 
 
@@ -125,7 +124,7 @@ namespace Kaart
                 float mytime = Axis_List_Two[i];
 
                
-                float myx = mytime * xfactor;
+                float myx = startx + mytime * xfactor;
 
                 float lowestyy = yfactor * List_Lowest_Not_Null(Axis_List_One);
                 float myy = myspeed * yfactor;
@@ -185,7 +184,7 @@ namespace Kaart
 
         }
 
-        protected float List_Lowest_Not_Null(List<float> list) {
+        public static float List_Lowest_Not_Null(List<float> list) {
             float ret;
             ret = 9999f;
             foreach (float getal in list) {
@@ -196,6 +195,10 @@ namespace Kaart
                 }
             }
             return ret;
+        }
+
+        public static float List_Highest(List<float> list) {
+            return list.Max();
         }
 
     }

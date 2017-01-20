@@ -48,6 +48,10 @@ namespace Kaart
 
                 statistieken.Text += $"Totale pauzetijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_PauseTime(track))}  \r\n";
                 statistieken.Text += $"Totale rentijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_Time_Running(track))}  \r\n";
+                statistieken.Text += $"Totale tochttijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_Time(track))} \r\n \r\n";
+
+                statistieken.Text += $"Laagste snelheid: {graphview.List_Lowest_Not_Null(TrackAnalyzer.Track_List_Speed_OverTime(track,true))  } km/u \r\n";
+                statistieken.Text += $"Hoogste snelheid: {graphview.List_Highest(TrackAnalyzer.Track_List_Speed_OverTime(track, true))}";
 
                 // De grafiek van snelheid over tijd van pagina 2.
                 graphview grafiek = new Kaart.graphview(this);

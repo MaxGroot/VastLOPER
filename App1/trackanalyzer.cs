@@ -223,19 +223,19 @@ namespace Kaart
 
             // Voorlopig geeft hij de gecodeerde track terug ipv een mooie samenvatting, zo kunnen we 
             // een keer hardlopen en een mooie faketrack naar onszelf sturen
-            
+            String sharetext = $"Totale afstand: {(TrackAnalyzer.Track_Total_Distance(track) / 1000).ToString("0.00")} kilometer \r\n";
+            sharetext += $"Gemiddelde snelheid, pauzes meegerekend: {TrackAnalyzer.Track_Average_Speed(track, true).ToString("0.0")} km/u \r\n";
+            sharetext += $"Gemiddelde snelheid, pauzes niet meegerekend: {TrackAnalyzer.Track_Average_Speed(track, false).ToString("0.0")} km/u \r\n \r\n";
 
-            float totaldistance = Track_Total_Distance(track) / 1000;
-            float totaltime = Track_Total_Time(track);
-            float totalrunningtime = Track_Total_Time_Running(track);
+            sharetext += $"Totale pauzetijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_PauseTime(track))}  \r\n";
+            sharetext += $"Totale rentijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_Time_Running(track))}  \r\n";
+            sharetext += $"Totale tochttijd: {TrackAnalyzer.Seconds_ToReadAble(TrackAnalyzer.Track_Total_Time(track))} \r\n \r\n";
 
-            float avgspeedincluded = Track_Average_Speed(track, true);
-            float avgspeedexcluded = Track_Average_Speed(track, false);
-            float totalpausetime = Track_Total_PauseTime(track);
+            sharetext += $"Laagste snelheid: {graphview.List_Lowest_Not_Null(TrackAnalyzer.Track_List_Speed_OverTime(track, true))  } km/u \r\n";
+            sharetext += $"Hoogste snelheid: {graphview.List_Highest(TrackAnalyzer.Track_List_Speed_OverTime(track, true))}";
 
-            String trackstringified = Track_Stringify(track);
-            return $"Totale afstand: {totaldistance} kilometer \r\n Totale tijd: {totaltime} seconden \r\n Totale tijd rennend: {totalrunningtime} Gemiddelde snelheid, pauzes meegerekend: {avgspeedincluded} \r\n pauzes niet meegerekend: {avgspeedexcluded} \r\n Totale pauzetijd: {totalpausetime} \r\n Encoded track: {trackstringified}";
 
+            return sharetext; 
         }
 
         public static List<float> Track_List_Speed_OverTime(List<knooppunt> track, bool speeds)
